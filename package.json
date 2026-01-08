@@ -1,0 +1,13 @@
+{
+  "name": "brux-holter-clinic-web",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node index.js",
+    "build": "echo \"no build step yet\""
+  },
+  "dependencies": {
+    "express": "^4.19.2"
+  }
+}
