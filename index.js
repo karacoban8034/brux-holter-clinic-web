@@ -43,7 +43,60 @@ const USERS = [
   },
 ];
 
+//// -----------------------------
+// Mock Patients (MVP)
 // -----------------------------
+const PATIENTS = [
+  {
+    id: "P-0001",
+    code: "BH-7Q2A",
+    age: 32,
+    gender: "F",
+    status: "ACTIVE", // ACTIVE | ARCHIVED
+    treatment: "MONITORING", // MONITORING | SPLINT | BOTOX | PHYSIO | OTHER
+    lastDataAt: "2026-01-08",
+    bsi: 68, // 0-100
+    episodes: 22,
+    trend: "IMPROVING" // IMPROVING | STABLE | WORSENING
+  },
+  {
+    id: "P-0002",
+    code: "BH-1K9M",
+    age: 41,
+    gender: "M",
+    status: "ACTIVE",
+    treatment: "SPLINT",
+    lastDataAt: "2026-01-09",
+    bsi: 74,
+    episodes: 31,
+    trend: "STABLE"
+  },
+  {
+    id: "P-0003",
+    code: "BH-3X5D",
+    age: 28,
+    gender: "F",
+    status: "ACTIVE",
+    treatment: "PHYSIO",
+    lastDataAt: "2026-01-05",
+    bsi: 82,
+    episodes: 40,
+    trend: "WORSENING"
+  },
+  {
+    id: "P-0004",
+    code: "BH-9N2P",
+    age: 52,
+    gender: "M",
+    status: "ARCHIVED",
+    treatment: "OTHER",
+    lastDataAt: "2025-12-18",
+    bsi: 44,
+    episodes: 9,
+    trend: "IMPROVING"
+  }
+];
+ -----------------------------
 // Helpers
 // -----------------------------
 function signToken(user) {
