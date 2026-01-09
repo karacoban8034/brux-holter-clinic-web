@@ -96,7 +96,7 @@ const PATIENTS = [
     trend: "IMPROVING"
   }
 ];
- -----------------------------
+// -----------------------------
 // Helpers
 // -----------------------------
 function signToken(user) {
