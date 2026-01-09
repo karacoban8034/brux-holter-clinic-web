@@ -5,12 +5,11 @@
   "type": "module",
   "scripts": {
     "start": "node index.js",
-    "build": "echo \"no build step yet\""
+    "build": "echo \"no build step\""
   },
   "dependencies": {
-    "bcryptjs": "^2.4.3",
-    "cors": "^2.8.5",
     "express": "^4.19.2",
+    "bcryptjs": "^2.4.3",
     "jsonwebtoken": "^9.0.2"
   }
 }
