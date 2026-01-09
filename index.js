@@ -400,6 +400,15 @@ app.get(
     if (!p) return res.status(404).json({ error: "Patient not found" });
     res.json({ patient: p });
   }
+  app.get(
+  "/api/patients/:id/trend",
+  authRequired,
+  requireRole("CLINIC_ADMIN", "CLINICIAN", "RESEARCHER"),
+  (req, res) => {
+    res.json({ ok: true });
+  }
+);
+
 );
 app.get("/patients", (req, res) => {
   res.send(page("Brux Holter Clinic | Patients", `
