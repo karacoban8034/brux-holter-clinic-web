@@ -400,6 +400,129 @@ app.get(
     res.json({ patient: p });
   }
 );
+app.get("/patients", (req, res) => {
+  res.send(page("Brux Holter Clinic | Patients", `
+  <div class="max-w-6xl mx-auto p-6">
+    <div class="flex items-center justify-between">
+      <div>
+        <h1 class="text-2xl font-semibold">Patients</h1>
+        <p class="text-sm text-slate-500">Pseudonymous patient list (MVP)</p>
+      </div>
+      <div class="flex gap-2">
+        <a href="/dashboard" class="rounded-lg border px-4 py-2 bg-white hover:bg-slate-50">Back</a>
+        <button id="logout" class="rounded-lg border px-4 py-2 bg-white hover:bg-slate-50">Logout</button>
+      </div>
+    </div>
+
+    <div class="bg-white rounded-2xl shadow p-5 mt-6">
+      <div class="flex flex-col md:flex-row gap-3 md:items-center md:justify-between">
+        <div class="flex gap-2 w-full md:w-auto">
+          <input id="q" class="w-full md:w-80 rounded-lg border p-3" placeholder="Search by Patient ID or Code (e.g., P-0001 / BH-7Q2A)" />
+          <select id="status" class="rounded-lg border p-3">
+            <option value="">All</option>
+            <option value="ACTIVE">Active</option>
+            <option value="ARCHIVED">Archived</option>
+          </select>
+        </div>
+        <div class="text-sm text-slate-500">
+          <span id="count">0</span> patients
+        </div>
+      </div>
+
+      <div class="overflow-auto mt-4">
+        <table class="min-w-full text-sm">
+          <thead>
+            <tr class="text-left text-slate-500 border-b">
+              <th class="py-3 pr-4">Patient ID</th>
+              <th class="py-3 pr-4">Code</th>
+              <th class="py-3 pr-4">Age</th>
+              <th class="py-3 pr-4">Gender</th>
+              <th class="py-3 pr-4">Treatment</th>
+              <th class="py-3 pr-4">BSI</th>
+              <th class="py-3 pr-4">Episodes</th>
+              <th class="py-3 pr-4">Last Data</th>
+              <th class="py-3 pr-4">Trend</th>
+            </tr>
+          </thead>
+          <tbody id="rows"></tbody>
+        </table>
+      </div>
+
+      <p id="err" class="text-sm text-red-600 mt-3 hidden"></p>
+    </div>
+  </div>
+
+  <script>
+    const token = localStorage.getItem("bh_token");
+    const user = JSON.parse(localStorage.getItem("bh_user") || "null");
+    if (!token || !user) window.location.href = "/login";
+
+    document.getElementById("logout").onclick = () => {
+      localStorage.removeItem("bh_token");
+      localStorage.removeItem("bh_user");
+      window.location.href = "/login";
+    };
+
+    const err = document.getElementById("err");
+    const rowsEl = document.getElementById("rows");
+    const countEl = document.getElementById("count");
+
+    function badge(text) {
+      return '<span class="text-xs rounded-full bg-slate-100 px-3 py-1">' + text + '</span>';
+    }
+
+    async function load() {
+      err.classList.add("hidden");
+      rowsEl.innerHTML = "";
+
+      const q = document.getElementById("q").value.trim();
+      const status = document.getElementById("status").value;
+
+      const params = new URLSearchParams();
+      if (q) params.set("q", q);
+      if (status) params.set("status", status);
+
+      const r = await fetch("/api/patients?" + params.toString(), {
+        headers: { Authorization: "Bearer " + token }
+      });
+
+      const data = await r.json();
+      if (!r.ok) {
+        err.textContent = data?.error || "Failed to load patients";
+        err.classList.remove("hidden");
+        return;
+      }
+
+      countEl.textContent = data.total;
+
+      for (const p of data.items) {
+        const tr = document.createElement("tr");
+        tr.className = "border-b last:border-b-0";
+        tr.innerHTML = \`
+          <td class="py-3 pr-4 font-medium">\${p.id}</td>
+          <td class="py-3 pr-4">\${p.code}</td>
+          <td class="py-3 pr-4">\${p.age}</td>
+          <td class="py-3 pr-4">\${p.gender}</td>
+          <td class="py-3 pr-4">\${badge(p.treatment)}</td>
+          <td class="py-3 pr-4">\${p.bsi}</td>
+          <td class="py-3 pr-4">\${p.episodes}</td>
+          <td class="py-3 pr-4">\${p.lastDataAt}</td>
+          <td class="py-3 pr-4">\${badge(p.trend)}</td>
+        \`;
+        rowsEl.appendChild(tr);
+      }
+    }
+
+    document.getElementById("q").addEventListener("input", () => {
+      window.clearTimeout(window.__t);
+      window.__t = window.setTimeout(load, 250);
+    });
+    document.getElementById("status").addEventListener("change", load);
+
+    load();
+  </script>
+  `));
+});
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
