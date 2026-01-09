@@ -446,20 +446,6 @@ app.get("/dashboard", (req, res) => {
   </div>
 
   <div class="bg-white rounded-2xl border p-5 mt-6">
-    <div class="flex items-center justify-between">
-      <h3 class="font-semibold">Session</h3>
-      <span id="roleTag" class="text-xs rounded-full bg-slate-100 px-3 py-1">—</span>
-    </div>
-    <pre id="session" class="text-sm bg-slate-50 p-4 rounded mt-4 overflow-auto"></pre>
-
-    <div class="flex gap-3 mt-4">
-      <button id="testAdmin" class="rounded-lg border px-4 py-2 bg-slate-900 text-white">Test Admin Endpoint</button>
-      <button id="testResearch" class="rounded-lg border px-4 py-2 bg-white hover:bg-slate-50">Test Research Endpoint</button>
-    </div>
-
-    <pre id="out" class="text-sm bg-slate-50 p-4 rounded mt-4 overflow-auto"></pre>
-  </div>
-</div>
 
 <script>
   const token = localStorage.getItem("bh_token");
