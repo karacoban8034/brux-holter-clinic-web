@@ -238,6 +238,7 @@ app.get("/dashboard", (req, res) => {
       <div class="bg-white rounded-2xl shadow p-5">
         <div class="text-sm text-slate-500">Patients</div>
         <div class="text-2xl font-semibold mt-1">—</div>
+        <a href="/patients" class="text-sm underline text-slate-700 mt-2 inline-block">Open patient list</a>
       </div>
       <div class="bg-white rounded-2xl shadow p-5">
         <div class="text-sm text-slate-500">Last Night Data</div>
