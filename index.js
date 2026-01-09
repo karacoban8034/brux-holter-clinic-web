@@ -367,6 +367,39 @@ app.get(
     res.json({ ok: true, message: "Hello Researcher 📊", user: req.user });
   }
 );
+// -----------------------------
+// Patients API (Protected)
+// -----------------------------
+app.get(
+  "/api/patients",
+  authRequired,
+  requireRole("CLINIC_ADMIN", "CLINICIAN", "RESEARCHER"),
+  (req, res) => {
+    const status = (req.query.status || "").toString().toUpperCase();
+    const q = (req.query.q || "").toString().toLowerCase();
+
+    let rows = [...PATIENTS];
+
+    if (status) rows = rows.filter(p => p.status === status);
+    if (q) rows = rows.filter(p =>
+      p.id.toLowerCase().includes(q) ||
+      p.code.toLowerCase().includes(q)
+    );
+
+    res.json({ items: rows, total: rows.length });
+  }
+);
+
+app.get(
+  "/api/patients/:id",
+  authRequired,
+  requireRole("CLINIC_ADMIN", "CLINICIAN", "RESEARCHER"),
+  (req, res) => {
+    const p = PATIENTS.find(x => x.id === req.params.id);
+    if (!p) return res.status(404).json({ error: "Patient not found" });
+    res.json({ patient: p });
+  }
+);
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
