@@ -92,6 +92,170 @@ app.get("/", (req, res) => {
 app.get("/health", (req, res) => {
   res.json({ status: "ok" });
 });
+// -----------------------------
+// Simple Clinic Web UI (MVP)
+// -----------------------------
+function page(title, body) {
+  return `<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>${title}</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-50 text-slate-900">
+  ${body}
+</body>
+</html>`;
+}
+
+app.get("/login", (req, res) => {
+  res.send(page("Brux Holter Clinic | Login", `
+  <div class="min-h-screen flex items-center justify-center p-6">
+    <div class="w-full max-w-md bg-white rounded-2xl shadow p-6">
+      <h1 class="text-2xl font-semibold">Clinic Login</h1>
+      <p class="text-sm text-slate-500 mt-1">Brux Holter – Clinical Portal</p>
+
+      <div class="mt-6 space-y-3">
+        <label class="block text-sm font-medium">Email</label>
+        <input id="email" class="w-full rounded-lg border p-3" placeholder="admin@clinic.com" />
+
+        <label class="block text-sm font-medium mt-2">Password</label>
+        <input id="password" type="password" class="w-full rounded-lg border p-3" placeholder="••••••••" />
+
+        <button id="btn" class="w-full mt-4 rounded-lg bg-slate-900 text-white p-3 font-medium">
+          Sign in
+        </button>
+
+        <p id="err" class="text-sm text-red-600 mt-2 hidden"></p>
+
+        <div class="mt-4 text-xs text-slate-500">
+          Demo users:<br/>
+          Admin: admin@clinic.com / Clinic123!<br/>
+          Dentist: dentist@clinic.com / Dentist123!<br/>
+          Research: research@clinic.com / Research123!
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const err = document.getElementById("err");
+    document.getElementById("btn").onclick = async () => {
+      err.classList.add("hidden");
+      const email = document.getElementById("email").value.trim();
+      const password = document.getElementById("password").value;
+
+      const r = await fetch("/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password })
+      });
+
+      const data = await r.json();
+      if (!r.ok) {
+        err.textContent = data?.error || "Login failed";
+        err.classList.remove("hidden");
+        return;
+      }
+
+      localStorage.setItem("bh_token", data.token);
+      localStorage.setItem("bh_user", JSON.stringify(data.user));
+      window.location.href = "/dashboard";
+    };
+  </script>
+  `));
+});
+
+app.get("/dashboard", (req, res) => {
+  res.send(page("Brux Holter Clinic | Dashboard", `
+  <div class="max-w-5xl mx-auto p-6">
+    <div class="flex items-center justify-between">
+      <div>
+        <h1 class="text-2xl font-semibold">Clinic Dashboard</h1>
+        <p class="text-sm text-slate-500">Secure Clinical Portal (MVP)</p>
+      </div>
+      <button id="logout" class="rounded-lg border px-4 py-2 bg-white hover:bg-slate-50">
+        Logout
+      </button>
+    </div>
+
+    <div class="grid md:grid-cols-3 gap-4 mt-6">
+      <div class="bg-white rounded-2xl shadow p-5">
+        <div class="text-sm text-slate-500">Patients</div>
+        <div class="text-2xl font-semibold mt-1">—</div>
+      </div>
+      <div class="bg-white rounded-2xl shadow p-5">
+        <div class="text-sm text-slate-500">Last Night Data</div>
+        <div class="text-2xl font-semibold mt-1">—</div>
+      </div>
+      <div class="bg-white rounded-2xl shadow p-5">
+        <div class="text-sm text-slate-500">Alerts</div>
+        <div class="text-2xl font-semibold mt-1">—</div>
+      </div>
+    </div>
+
+    <div class="bg-white rounded-2xl shadow p-5 mt-6">
+      <div class="flex items-center justify-between">
+        <h2 class="text-lg font-semibold">Session</h2>
+        <span id="role" class="text-xs rounded-full bg-slate-100 px-3 py-1"></span>
+      </div>
+
+      <pre id="me" class="text-xs bg-slate-50 rounded-xl p-4 mt-4 overflow-auto"></pre>
+
+      <div class="mt-4 flex gap-2">
+        <button id="adminTest" class="rounded-lg bg-slate-900 text-white px-4 py-2 text-sm">
+          Test Admin Endpoint
+        </button>
+        <button id="researchTest" class="rounded-lg border px-4 py-2 text-sm bg-white hover:bg-slate-50">
+          Test Research Endpoint
+        </button>
+      </div>
+
+      <pre id="out" class="text-xs bg-slate-50 rounded-xl p-4 mt-4 overflow-auto"></pre>
+    </div>
+  </div>
+
+  <script>
+    const token = localStorage.getItem("bh_token");
+    const user = JSON.parse(localStorage.getItem("bh_user") || "null");
+
+    if (!token || !user) {
+      window.location.href = "/login";
+    }
+
+    document.getElementById("role").textContent = user.role + " • " + user.email;
+
+    document.getElementById("logout").onclick = () => {
+      localStorage.removeItem("bh_token");
+      localStorage.removeItem("bh_user");
+      window.location.href = "/login";
+    };
+
+    async function call(path) {
+      const r = await fetch(path, { headers: { Authorization: "Bearer " + token } });
+      const data = await r.json();
+      return { ok: r.ok, status: r.status, data };
+    }
+
+    (async () => {
+      const me = await call("/auth/me");
+      document.getElementById("me").textContent = JSON.stringify(me, null, 2);
+    })();
+
+    document.getElementById("adminTest").onclick = async () => {
+      const res = await call("/api/admin-only");
+      document.getElementById("out").textContent = JSON.stringify(res, null, 2);
+    };
+
+    document.getElementById("researchTest").onclick = async () => {
+      const res = await call("/api/research");
+      document.getElementById("out").textContent = JSON.stringify(res, null, 2);
+    };
+  </script>
+  `));
+});
 
 // -----------------------------
 // Auth routes
